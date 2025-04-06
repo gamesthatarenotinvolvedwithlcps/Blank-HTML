@@ -1,175 +1,424 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Effects</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-            background-color: #f0f0f0;
-            color: #333;
-        }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-        input, button, audio, .slider-container {
-            margin: 10px 0;
-            width: 100%;
-        }
-        .slider-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .slider-container input {
-            flex: 1;
-        }
-        .slider-container span {
-            width: 50px;
-            text-align: center;
-        }
-        button {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: #007BFF;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MP3 Editor - Compact Player with Live Values</title>
+  <style>
+    /* Global Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #222, #444);
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    /* Card Container */
+    .card {
+      background: #333;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    .card h1 {
+      margin-bottom: 20px;
+      font-size: 1.8em;
+      color: #eee;
+    }
+    /* Custom File Input */
+    .file-input-container {
+      position: relative;
+      margin: 20px 0;
+    }
+    #audioFile {
+      opacity: 0;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      cursor: pointer;
+    }
+    .custom-file-label {
+      display: block;
+      background: #555;
+      padding: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      color: #eee;
+    }
+    .custom-file-label:hover {
+      background: #666;
+    }
+    /* Sliders and Live Value Input */
+    .slider-group {
+      margin: 15px 0;
+      text-align: left;
+    }
+    .slider-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #ccc;
+    }
+    .slider-wrapper {
+      display: flex;
+      align-items: center;
+    }
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      background: #555;
+      height: 6px;
+      border-radius: 3px;
+      outline: none;
+      transition: background 0.3s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #eee;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.3s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    .live-input {
+      width: 50px;
+      margin-left: 10px;
+      padding: 5px;
+      border: none;
+      border-radius: 4px;
+      text-align: center;
+      background: #555;
+      color: #eee;
+      transition: background 0.3s ease;
+    }
+    .live-input:focus {
+      outline: none;
+      background: #666;
+    }
+    /* Apply Button */
+    .btn {
+      display: block;
+      background: #555;
+      color: #eee;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background 0.3s ease, transform 0.2s ease;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background: #666;
+      transform: scale(1.02);
+    }
+    /* Compact Custom Audio Player */
+    .custom-player {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      background: #222;
+      padding: 5px 10px;
+      border-radius: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+    }
+    .play-btn {
+      background: #eee;
+      color: #222;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+    }
+    .play-btn:hover {
+      transform: scale(1.1);
+      background: #ccc;
+    }
+    .progress-container {
+      flex: 1;
+      height: 4px;
+      background: #555;
+      border-radius: 3px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+    }
+    .progress {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #eee, #ccc);
+      transition: width 0.1s linear;
+    }
+    /* Download Link */
+    #downloadLink {
+      display: none;
+      text-decoration: none;
+      background: #666;
+      padding: 10px;
+      text-align: center;
+      border-radius: 6px;
+      margin-top: 15px;
+      color: #eee;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+    #downloadLink:hover {
+      background: #777;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Audio Effects</h1>
-        <input type="file" id="audio-upload" accept="audio/*">
-        <audio id="audio-player" controls></audio>
-        <div class="slider-container">
-            <span>0.5x</span>
-            <input type="range" id="speed-slider" min="0.5" max="2" value="1" step="0.1">
-            <span>2x</span>
-        </div>
-        <button id="render-button">Render</button>
+  <div class="card">
+    <h1>MP3 Editor</h1>
+    <!-- Custom File Input -->
+    <div class="file-input-container">
+      <label class="custom-file-label" for="audioFile">Choose File</label>
+      <input type="file" id="audioFile" accept="audio/mp3" />
     </div>
+    
+    <!-- Sliders with Live Value -->
+    <div class="slider-group">
+      <label for="speedControl">Speed</label>
+      <div class="slider-wrapper">
+        <input type="range" id="speedControl" min="0.5" max="2" step="0.1" value="1" />
+        <input type="number" id="speedValue" class="live-input" value="1" step="0.1" />
+      </div>
+    </div>
+    <div class="slider-group">
+      <label for="bassControl">Bass Boost</label>
+      <div class="slider-wrapper">
+        <input type="range" id="bassControl" min="0" max="10" step="1" value="0" />
+        <input type="number" id="bassValue" class="live-input" value="0" step="1" />
+      </div>
+    </div>
+    <!-- Apply Button -->
+    <button class="btn" onclick="processAndRenderAudio()">Apply</button>
 
-    <script>
-        document.getElementById('audio-upload').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const audioPlayer = document.getElementById('audio-player');
-                audioPlayer.src = URL.createObjectURL(file);
-                audioPlayer.load();
-            }
-        });
+    <!-- Custom Audio Player -->
+    <div class="custom-player" id="customPlayer" style="display:none;">
+      <button class="play-btn" id="playPauseBtn">&#9658;</button>
+      <div class="progress-container" id="progressContainer">
+        <div class="progress" id="progress"></div>
+      </div>
+    </div>
+    <!-- Hidden Audio Element -->
+    <audio id="audioPlayer" style="display:none;"></audio>
+    <!-- Download Link -->
+    <a id="downloadLink" download="processed_audio.wav">Download Processed Audio</a>
+  </div>
 
-        document.getElementById('speed-slider').addEventListener('input', function(event) {
-            const speed = event.target.value;
-            const audioPlayer = document.getElementById('audio-player');
-            audioPlayer.playbackRate = speed;
-        });
+  <script>
+    // Update live values for sliders and number inputs.
+    const speedControl = document.getElementById('speedControl');
+    const speedValue = document.getElementById('speedValue');
+    speedControl.addEventListener('input', () => {
+      speedValue.value = speedControl.value;
+    });
+    speedValue.addEventListener('input', () => {
+      speedControl.value = speedValue.value;
+    });
 
-        document.getElementById('render-button').addEventListener('click', function() {
-            const audioPlayer = document.getElementById('audio-player');
-            const speed = document.getElementById('speed-slider').value;
-            renderAudio(audioPlayer.src, speed);
-        });
+    const bassControl = document.getElementById('bassControl');
+    const bassValue = document.getElementById('bassValue');
+    bassControl.addEventListener('input', () => {
+      bassValue.value = bassControl.value;
+    });
+    bassValue.addEventListener('input', () => {
+      bassControl.value = bassValue.value;
+    });
 
-        function renderAudio(src, speed) {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            fetch(src)
-                .then(response => response.arrayBuffer())
-                .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
-                .then(audioBuffer => {
-                    const offlineContext = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(
-                        audioBuffer.numberOfChannels,
-                        audioBuffer.length,
-                        audioBuffer.sampleRate
-                    );
+    let audioContext;
+    let audioBuffer;
+    let audioPlayer = document.getElementById('audioPlayer');
+    let customPlayer = document.getElementById('customPlayer');
+    let playPauseBtn = document.getElementById('playPauseBtn');
+    let progress = document.getElementById('progress');
+    let progressContainer = document.getElementById('progressContainer');
+    let updateProgressInterval;
 
-                    const source = offlineContext.createBufferSource();
-                    source.buffer = audioBuffer;
-                    source.playbackRate.value = speed;
-                    source.connect(offlineContext.destination);
-                    source.start(0);
+    document.getElementById('audioFile').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.onload = function () {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          audioContext.decodeAudioData(reader.result, function (buffer) {
+            audioBuffer = buffer;
+            // Load original file into the audio player.
+            const blob = new Blob([reader.result], { type: 'audio/mp3' });
+            const url = URL.createObjectURL(blob);
+            audioPlayer.src = url;
+            audioPlayer.load();
+            // Show the custom player once a file is loaded.
+            customPlayer.style.display = 'flex';
+          });
+        };
+      }
+    });
 
-                    offlineContext.startRendering().then(renderedBuffer => {
-                        const renderedBlob = bufferToWave(renderedBuffer, renderedBuffer.length);
-                        const url = URL.createObjectURL(renderedBlob);
-                        const downloadLink = document.createElement('a');
-                        downloadLink.href = url;
-                        downloadLink.download = 'rendered-audio.wav';
-                        downloadLink.textContent = 'Download Rendered Audio';
-                        document.body.appendChild(downloadLink);
-                    });
-                });
+    function processAndRenderAudio() {
+      if (!audioBuffer) {
+        alert("Please upload an audio file first.");
+        return;
+      }
+
+      // Pause playback, reset play button and progress.
+      audioPlayer.pause();
+      playPauseBtn.innerHTML = "&#9658;";
+      clearInterval(updateProgressInterval);
+      progress.style.width = "0%";
+
+      const speed = parseFloat(speedControl.value);
+      const bassGain = parseFloat(bassControl.value);
+      const sampleRate = audioContext.sampleRate;
+      
+      // Calculate new length based on speed.
+      const newLength = Math.ceil(audioBuffer.length / speed);
+
+      // Create an OfflineAudioContext with the adjusted length.
+      const offlineContext = new OfflineAudioContext(
+        audioBuffer.numberOfChannels,
+        newLength,
+        sampleRate
+      );
+
+      // Create the source and apply settings.
+      const offlineSource = offlineContext.createBufferSource();
+      offlineSource.buffer = audioBuffer;
+      offlineSource.playbackRate.value = speed;
+
+      // Create bass boost filter.
+      const bassEQ = offlineContext.createBiquadFilter();
+      bassEQ.type = "lowshelf";
+      bassEQ.frequency.value = 100;
+      bassEQ.gain.value = bassGain;
+
+      // Connect the audio chain.
+      offlineSource.connect(bassEQ);
+      bassEQ.connect(offlineContext.destination);
+      offlineSource.start();
+
+      // Render the processed audio.
+      offlineContext.startRendering().then(renderedBuffer => {
+        // Convert rendered buffer to WAV.
+        const wavBlob = bufferToWave(renderedBuffer);
+        const url = URL.createObjectURL(wavBlob);
+        // Update the audio player source and load it.
+        audioPlayer.src = url;
+        audioPlayer.load();
+        // Update the download link.
+        const downloadLink = document.getElementById('downloadLink');
+        downloadLink.href = url;
+        downloadLink.style.display = 'block';
+      });
+    }
+
+    // Custom Audio Player Controls.
+    playPauseBtn.addEventListener('click', () => {
+      if (audioPlayer.paused) {
+        audioPlayer.play();
+        playPauseBtn.innerHTML = "&#10074;&#10074;"; // Pause icon.
+        updateProgress();
+      } else {
+        audioPlayer.pause();
+        playPauseBtn.innerHTML = "&#9658;"; // Play icon.
+        clearInterval(updateProgressInterval);
+      }
+    });
+
+    // Update the progress bar as the audio plays.
+    audioPlayer.addEventListener('timeupdate', updateProgress);
+    
+    function updateProgress() {
+      updateProgressInterval = setInterval(() => {
+        if (audioPlayer.duration) {
+          const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+          progress.style.width = percent + '%';
         }
+      }, 100);
+    }
 
-        function bufferToWave(buffer, len) {
-            const numOfChan = buffer.numberOfChannels,
-                length = len * numOfChan * 2 + 44,
-                bufferArray = new ArrayBuffer(length),
-                view = new DataView(bufferArray),
-                channels = [],
-                i,
-                sample,
-                offset = 0,
-                pos = 0;
+    // Allow clicking on the progress container to seek.
+    progressContainer.addEventListener('click', function(e) {
+      const rect = progressContainer.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const width = rect.width;
+      const percent = clickX / width;
+      audioPlayer.currentTime = percent * audioPlayer.duration;
+      progress.style.width = percent * 100 + '%';
+    });
 
-            // write WAVE header
-            setUint32(0x46464952); // "RIFF"
-            setUint32(length - 8); // file length - 8
-            setUint32(0x45564157); // "WAVE"
+    // Helper function: Converts an AudioBuffer to a WAV blob.
+    function bufferToWave(buffer) {
+      const numOfChannels = buffer.numberOfChannels;
+      const length = buffer.length * numOfChannels * 2 + 44;
+      const bufferArray = new ArrayBuffer(length);
+      const view = new DataView(bufferArray);
+      let channels = [];
+      const sampleRate = buffer.sampleRate;
+      let offset = 0;
 
-            setUint32(0x20746d66); // "fmt " chunk
-            setUint32(16); // length = 16
-            setUint16(1); // PCM (uncompressed)
-            setUint16(numOfChan);
-            setUint32(buffer.sampleRate);
-            setUint32(buffer.sampleRate * 2 * numOfChan); // avg. bytes/sec
-            setUint16(numOfChan * 2); // block-align
-            setUint16(16); // 16-bit (hardcoded in this demo)
-
-            setUint32(0x61746164); // "data" - chunk
-            setUint32(length - pos - 4); // chunk length
-
-            // write interleaved data
-            for (i = 0; i < buffer.numberOfChannels; i++) {
-                channels.push(buffer.getChannelData(i));
-            }
-
-            while (pos < length) {
-                for (i = 0; i < numOfChan; i++) {
-                    // interleave channels
-                    sample = Math.max(-1, Math.min(1, channels[i][offset])); // clamp
-                    sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0; // scale to 16-bit signed int
-                    view.setInt16(pos, sample, true); // write 16-bit sample
-                    pos += 2;
-                }
-                offset++; // next source sample
-            }
-
-            return new Blob([bufferArray], { type: 'audio/wav' });
-
-            function setUint16(data) {
-                view.setUint16(pos, data, true);
-                pos += 2;
-            }
-
-            function setUint32(data) {
-                view.setUint32(pos, data, true);
-                pos += 4;
-            }
+      function writeString(view, offset, string) {
+        for (let i = 0; i < string.length; i++) {
+          view.setUint8(offset + i, string.charCodeAt(i));
         }
-    </script>
+      }
+
+      writeString(view, 0, 'RIFF');
+      view.setUint32(4, 36 + buffer.length * numOfChannels * 2, true);
+      writeString(view, 8, 'WAVE');
+      writeString(view, 12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, numOfChannels, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * numOfChannels * 2, true);
+      view.setUint16(32, numOfChannels * 2, true);
+      view.setUint16(34, 16, true);
+      writeString(view, 36, 'data');
+      view.setUint32(40, buffer.length * numOfChannels * 2, true);
+
+      for (let i = 0; i < numOfChannels; i++) {
+        channels.push(buffer.getChannelData(i));
+      }
+
+      offset = 44;
+      for (let i = 0; i < buffer.length; i++) {
+        for (let j = 0; j < numOfChannels; j++) {
+          let sample = Math.max(-1, Math.min(1, channels[j][i]));
+          view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+          offset += 2;
+        }
+      }
+      return new Blob([view], { type: 'audio/wav' });
+    }
+  </script>
 </body>
 </html>

@@ -4,14 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Effects</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        input, button {
+            margin: 10px;
+        }
+    </style>
 </head>
 <body>
     <h1>Audio Effects</h1>
     <input type="file" id="audio-upload" accept="audio/*">
+    <br>
     <button id="slow-reverb">Slow + Reverb</button>
     <button id="speed-up">Speed Up</button>
+    <br>
     <audio id="audio-player" controls></audio>
 
-    <script src="script.js"></script>
+    <script>
+        document.getElementById('audio-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const audioPlayer = document.getElementById('audio-player');
+                audioPlayer.src = URL.createObjectURL(file);
+            }
+        });
+
+        document.getElementById('slow-reverb').addEventListener('click', function() {
+            applyEffect('slow-reverb');
+        });
+
+        document.getElementById('speed-up').addEventListener('click', function() {
+            applyEffect('speed-up');
+        });
+
+        function applyEffect(effect) {
+            const audioPlayer = document.getElementById('audio-player');
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioContext.createMediaElementSource(audioPlayer);
+            const gainNode = audioContext.createGain();
+            const reverbNode = audioContext.createConvolver();
+
+            source.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (effect === 'slow-reverb') {
+                audioPlayer.playbackRate = 0.75; // Slow down
+                // Add reverb effect here (you need to load a reverb impulse response)
+            } else if (effect === 'speed-up') {
+                audioPlayer.playbackRate = 1.5; // Speed up
+            }
+
+            audioPlayer.play();
+        }
+
+        function loadReverb(audioContext, url) {
+            return fetch(url)
+                .then(response => response.arrayBuffer())
+                .then(data => audioContext.decodeAudioData(data));
+        }
+
+        document.getElementById('slow-reverb').addEventListener('click', function() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            loadReverb(audioContext, 'path/to/impulse-response.wav')
+                .then(buffer => {
+                    reverbNode.buffer = buffer;
+                    applyEffect('slow-reverb', audioContext, reverbNode);
+                });
+        });
+
+        function applyEffect(effect, audioContext, reverbNode) {
+            const audioPlayer = document.getElementById('audio-player');
+            const source = audioContext.createMediaElementSource(audioPlayer);
+            const gainNode = audioContext.createGain();
+
+            source.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (effect === 'slow-reverb') {
+                audioPlayer.playbackRate = 0.75; // Slow down
+                source.connect(reverbNode);
+                reverbNode.connect(audioContext.destination);
+            } else if (effect === 'speed-up') {
+                audioPlayer.playbackRate = 1.5; // Speed up
+            }
+
+            audioPlayer.play();
+        }
+    </script>
 </body>
 </html>
